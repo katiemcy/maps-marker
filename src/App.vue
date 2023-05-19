@@ -5,10 +5,14 @@ import Header from './components/Header.vue'
 import Searchbar from './components/SearchBar.vue'
 import Map from './components/Map.vue'
 
-const coords = reactive({})
+const coords = reactive({
+  lat: null,
+  lng: null
+})
 
 function displayData (data) {
-  coords.value = { ...data }
+  coords.lat = data.lat
+  coords.lng = data.lng
 }
 </script>
 
@@ -19,7 +23,7 @@ function displayData (data) {
 
   <main>
       <Searchbar @coords="displayData"  />
-      <Map :coords="coords" />
+      <Map :coords="{...coords}" />
 
   </main>
 </template>
