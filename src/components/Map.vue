@@ -30,6 +30,10 @@ function loadMap(lati, long) {
                 position: { lat: lati, lng: long },
             });
         }
+        const defaultMarker = new AdvancedMarkerElement({
+                map,
+                position: { lat: 43.7482617, lng: -79.2916301 },
+            });
     })
 }
 
@@ -44,8 +48,6 @@ onMounted(() => {
 // })
 
 watch(coordsRef, () => {
-    console.log('refresh map')
-    console.log(coordsRef.value.lat, coordsRef.value.lng)
     loadMap(coordsRef.value.lat, coordsRef.value.lng)
 })
 
