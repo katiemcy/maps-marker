@@ -98,7 +98,7 @@ function validateAddress(addr){
             latestSearch.lat = result.geometry.location.lat
             latestSearch.lng = result.geometry.location.lng
 
-            emit('latestSearch', latestSearch)
+            emit('latest-search', latestSearch)
         } else {
             console.log('invalid address')
         }
@@ -109,6 +109,7 @@ function validateAddress(addr){
 }
 
 function handleSubmit () {
+    console.log(addressInput.value)
     validateAddress(addressInput.value)
 }
 
