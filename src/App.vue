@@ -1,28 +1,37 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import firebase from './firebase'
+import { ref, onMounted } from 'vue'
+import { getDatabase, ref as fbRef, set, onValue } from "firebase/database"
 
 import Header from './components/Header.vue'
-import Searchbar from './components/SearchBar.vue'
+import SearchBar from './components/SearchBar.vue'
 import Map from './components/Map.vue'
 import SearchedList from './components/SearchedList.vue'
 
-const coords = reactive({
-  lat: null,
-  lng: null
+const searchedPlaces = ref([])
+const calledFirebase = ref(false)
+
+const database = getDatabase(firebase)
+const dbRef = fbRef(database)
+
+// When a new search is emitted from SearchBar, push object to reactive array and update database
+function pushToSearched(obj) {
+  searchedPlaces.value.push({ ...obj })
+  set(dbRef, [...searchedPlaces.value])
+}
+
+onMounted(() => {
+  onValue(dbRef, (data) => {
+    if(data.exists()) {
+      searchedPlaces.value = data.val()
+    } else {
+      console.log('no data')
+    }
+
+    calledFirebase.value = true
+  })
 })
 
-const searchedPlaces = ref([])
-
-function displayData (data) {
-  console.log('displayData')
-  coords.lat = data.lat
-  coords.lng = data.lng
-}
-
-function pushToSearched(obj) {
-  console.log(obj)
-  searchedPlaces.value.push({...obj})
-}
 </script>
 
 <template>
@@ -31,9 +40,9 @@ function pushToSearched(obj) {
   </header>
 
   <main>
-      <Searchbar @coords="displayData" @latestSearch="pushToSearched" />
-      <Map :coords="{...coords}" />
-      <SearchedList />
+    <SearchBar @latestSearch="pushToSearched" />
+    <Map v-if="calledFirebase" :searchedPlaces="searchedPlaces" />
+    <SearchedList :searchedPlaces="searchedPlaces" />
   </main>
 </template>
 
