@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, toRef, computed, onMounted } from 'vue'
 
 const props = defineProps({
     searchedPlaces: Array
@@ -8,6 +8,21 @@ const props = defineProps({
 const emit = defineEmits(['remaining-places'])
 
 const remainingPlaces = ref([])
+const searchedPlaces = toRef(props, 'searchedPlaces')
+const currentIndex = computed(() => searchedPlaces.value.length);
+
+const displayedPlaces = computed(() => {
+  const startIndex = Math.max(currentIndex.value - 10, 0);
+  return searchedPlaces.value.slice(startIndex, currentIndex.value);
+});
+
+function showPrevTen() {
+  currentIndex.value = Math.min(currentIndex.value + 10, currentIndex.value);
+}
+
+function showNextTen() {
+  currentIndex.value = Math.max(currentIndex.value - 10, 0);
+}
 
 function handleDelete(e) {
     const checkboxes = document.querySelectorAll('input[name="select"]')
@@ -19,6 +34,10 @@ function handleDelete(e) {
     emit('remaining-places', remainingPlaces)                               
 }
 
+onMounted(() => {
+    console.log(displayedPlaces.value)
+})
+
 </script>
 
 <template>
@@ -29,7 +48,7 @@ function handleDelete(e) {
                 <ul>
                     <!-- a select box, a number, the address -->
                     <li v-if="props.searchedPlaces.length > 0" 
-                        v-for="(place, index) in props.searchedPlaces" 
+                        v-for="(place, index) in displayedPlaces" 
                         :key="place.place_id"
                     >
                         <label :for="place.place_id + index" class="sr-only">Select {{place.formatted_address}}</label>
@@ -39,6 +58,11 @@ function handleDelete(e) {
                     </li>
                 </ul>
             </form>
+
+            <div>
+                <button @click="">&lt;</button>
+                <button @click="">&gt;</button>
+            </div>
         </div>
     </section>
 </template>

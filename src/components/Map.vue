@@ -3,18 +3,18 @@ import { ref, onMounted, watch, reactive, toRef } from 'vue'
 import { Loader } from "@googlemaps/js-api-loader"
 // import { onValue } from 
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
+const props = defineProps({
+    searchedPlaces: Array
+})
 
 const mapDiv = ref(null)
 const latestSearchedCoords = reactive({
     lat: null,
     lng: null
 })
-
-const props = defineProps({
-    searchedPlaces: Array
-})
 const searchedPlaces = toRef(props, 'searchedPlaces')
+
+const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
 
 const loader = new Loader({ apiKey: GOOGLE_MAPS_API_KEY})
 
@@ -48,19 +48,23 @@ function loadMap(lati, long) {
 }
 
 onMounted(() => {
+// if there is searchedPlaces, assign values to latestSearchedCoords and call axios to load map
     if (props.searchedPlaces.length > 0) {
         latestSearchedCoords.lat = props.searchedPlaces[props.searchedPlaces.length - 1].lat
         latestSearchedCoords.lng = props.searchedPlaces[props.searchedPlaces.length - 1].lng
 
         loadMap(latestSearchedCoords.lat, latestSearchedCoords.lng)
     } else {
+    // if there's no search history, center map with Accuenergy coords
         loadMap(43.7482617, -79.2916301)
     }
 })
 
 watch(searchedPlaces, () => {
+// when user searches a new place, assign coords with the latest search and reload map
     latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
     latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
+    console.log('watch')
 
     loadMap(latestSearchedCoords.lat, latestSearchedCoords.lng)
 })

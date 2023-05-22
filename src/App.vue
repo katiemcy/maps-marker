@@ -1,12 +1,13 @@
 <script setup>
 import firebase from './firebase'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, toRaw } from 'vue'
 import { getDatabase, ref as fbRef, set, onValue } from "firebase/database"
 
 import Header from './components/Header.vue'
 import SearchBar from './components/SearchBar.vue'
 import Map from './components/Map.vue'
 import SearchedList from './components/SearchedList.vue'
+import LocalTime from './components/LocalTime.vue'
 
 const searchedPlaces = ref([])
 const callMap = ref(false)
@@ -14,14 +15,19 @@ const callMap = ref(false)
 const database = getDatabase(firebase)
 const dbRef = fbRef(database)
 
-// When a new search is emitted from SearchBar, push object to reactive array and update database
-function pushToSearched(obj) {
-  searchedPlaces.value.push({ obj })
-  set(dbRef, [...searchedPlaces.value])
+// When a new search is emitted from SearchBar, update database
+function addSearch(obj) {
+  const copiedArr = [ ...searchedPlaces.value ]
+  copiedArr.push({ ...obj })
+  set(dbRef, copiedArr)
 }
 
-function updateDb(array){
-  console.log(array)
+// When user deletes locations, update database
+function delSearch(array){
+  const newArray = searchedPlaces.value.filter((place, index) => {
+      return array.value.includes(String(index));
+  })
+  set(dbRef, newArray)
 }
 
 onMounted(() => {
@@ -44,9 +50,10 @@ onMounted(() => {
   </header>
 
   <main>
-    <SearchBar @latest-search="pushToSearched" />
-    <Map v-if="callMap" :searchedPlaces="searchedPlaces" />
-    <SearchedList :searchedPlaces="searchedPlaces" @remaining-places="updateDb"/>
+    <SearchBar @latest-search="addSearch" />
+    <Map v-if="callMap" :searched-places="searchedPlaces" />
+    <LocalTime :searched-places="searchedPlaces "/>
+    <SearchedList :searched-places="searchedPlaces" @remaining-places="delSearch"/>
   </main>
 </template>
 
