@@ -109,7 +109,6 @@ function validateAddress(addr){
 }
 
 function handleSubmit () {
-    console.log(addressInput.value)
     validateAddress(addressInput.value)
 }
 

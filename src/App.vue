@@ -1,7 +1,7 @@
 <script setup>
 import firebase from './firebase'
 import { ref, onMounted, toRaw } from 'vue'
-import { getDatabase, ref as fbRef, set, onValue } from "firebase/database"
+import { getDatabase, ref as fbRef, set, onValue, remove } from "firebase/database"
 
 import Header from './components/Header.vue'
 import SearchBar from './components/SearchBar.vue'
@@ -10,7 +10,6 @@ import SearchedList from './components/SearchedList.vue'
 import LocalTime from './components/LocalTime.vue'
 
 const searchedPlaces = ref([])
-const callMap = ref(false)
 
 const database = getDatabase(firebase)
 const dbRef = fbRef(database)
@@ -23,21 +22,23 @@ function addSearch(obj) {
 }
 
 // When user deletes locations, update database
-function delSearch(array){
-  const newArray = searchedPlaces.value.filter((place, index) => {
-      return array.value.includes(String(index));
+function delSearch(delArray){
+  // creates a newArray based on searchedPlaces, but filter out deleted places
+  const newHistory = searchedPlaces.value.filter((place, index) => {
+      return !delArray.value.includes(String(index + 1));
   })
-  set(dbRef, newArray)
+
+  set(dbRef, newHistory)
 }
 
 onMounted(() => {
+  searchedPlaces.value = []
   onValue(dbRef, (data) => {
     if(data.exists()) {
       searchedPlaces.value = data.val()
-      callMap.value = true
     } else {
       console.log('no data')
-      callMap.value = true
+      searchedPlaces.value = []
     }
   })
 })
@@ -51,9 +52,9 @@ onMounted(() => {
 
   <main>
     <SearchBar @latest-search="addSearch" />
-    <Map v-if="callMap" :searched-places="searchedPlaces" />
-    <LocalTime :searched-places="searchedPlaces "/>
-    <SearchedList :searched-places="searchedPlaces" @remaining-places="delSearch"/>
+    <Map :searched-places="searchedPlaces" />
+    <LocalTime v-show="searchedPlaces.length > 0" :searched-places="searchedPlaces "/>
+    <SearchedList :searched-places="searchedPlaces" @delete-places="delSearch"/>
   </main>
 </template>
 

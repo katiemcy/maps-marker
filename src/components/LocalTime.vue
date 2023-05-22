@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { toRef, reactive, onMounted, watch, ref, watchEffect, onUnmounted } from 'vue'
+import { toRef, reactive, onMounted, watch, ref,  onUnmounted } from 'vue'
 
 const props = defineProps({
     searchedPlaces: Array
@@ -30,13 +30,10 @@ function getTime(lat, lng) {
         params: {
             key: GOOGLE_MAPS_API_KEY,
             timestamp: Math.floor(Date.now() / 1000),
-            // timestamp: 1331161200,
             location: `${lat},${lng}`
         }
     }).then(res => {
-        console.log(res.data)
         if(res.data.status === "OK") {
-            console.log(res.data)
             rawOffset.value = res.data.rawOffset
             dstOffset.value = res.data.dstOffset
             timeZone.value = res.data.timeZoneName
@@ -47,23 +44,6 @@ function getTime(lat, lng) {
     .catch(error => {
         console.log(error.message)
     })
-}
-
-function updateClock() {
-    const currentTime = new Date();
-
-    // Adjust current time based on time zone offset
-    const timeZoneOffsetMinutes = rawOffset.value + dstOffset.value
-    currentTime.setMinutes(currentTime.getMinutes() + timeZoneOffsetMinutes)
-
-    const hours = currentTime.getHours()
-    const minutes = currentTime.getMinutes()
-    const seconds = currentTime.getSeconds();
-
-    const formattedTime = `${hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-
-    localTime.value = formattedTime
-    console.log(timeZoneOffsetMinutes)
 }
 
 function calcTime() {
@@ -77,28 +57,20 @@ function calcTime() {
     localDate.value = newDate.toLocaleDateString()
 }
 
-onMounted(() => {
-// if there is searchedPlaces, assign values to latestSearchedCoords and call axios to get local time
+watch(searchedPlaces, () => {
+// when user searches a new place, assign coords with the latest search and get local time again
     if (props.searchedPlaces.length > 0) {
-        latestSearchedCoords.lat = props.searchedPlaces[props.searchedPlaces.length - 1].lat
-        latestSearchedCoords.lng = props.searchedPlaces[props.searchedPlaces.length - 1].lng
-
+        latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
+        latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
+    
         getTime(latestSearchedCoords.lat, latestSearchedCoords.lng)
     } else {
-        // if there's no search history, get local time with Accuenergy coords
-        getTime(43.7482617, -79.2916301)
+        clearInterval(intervalId)
     }
 })
 
-watch(searchedPlaces, () => {
-// when user searches a new place, assign coords with the latest search and get local time again
-    latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
-    latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
-
-    getTime(latestSearchedCoords.lat, latestSearchedCoords.lng)
-})
-
 watch([rawOffset, dstOffset], () => {
+// after getting timezone info from axios, run clock
   if (rawOffset.value !== null && dstOffset.value !== null) {
     clearInterval(intervalId)
     intervalId = setInterval(calcTime, 1000)

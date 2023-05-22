@@ -48,25 +48,22 @@ function loadMap(lati, long) {
 }
 
 onMounted(() => {
-// if there is searchedPlaces, assign values to latestSearchedCoords and call axios to load map
-    if (props.searchedPlaces.length > 0) {
-        latestSearchedCoords.lat = props.searchedPlaces[props.searchedPlaces.length - 1].lat
-        latestSearchedCoords.lng = props.searchedPlaces[props.searchedPlaces.length - 1].lng
-
-        loadMap(latestSearchedCoords.lat, latestSearchedCoords.lng)
-    } else {
-    // if there's no search history, center map with Accuenergy coords
+// if there's no search history, center map with Accuenergy coords
+    if (props.searchedPlaces.length === 0) {
         loadMap(43.7482617, -79.2916301)
-    }
+    } 
 })
 
 watch(searchedPlaces, () => {
-// when user searches a new place, assign coords with the latest search and reload map
+// when user searches/ delete a  place, assign coords with the latest search and reload map
+    if (props.searchedPlaces.length > 0) {
     latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
     latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
-    console.log('watch')
 
     loadMap(latestSearchedCoords.lat, latestSearchedCoords.lng)
+    } else {
+        loadMap(43.7482617, -79.2916301)
+    }
 })
 
 </script>
