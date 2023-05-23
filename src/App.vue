@@ -1,47 +1,71 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import firebase from './firebase'
+import { ref, onMounted, toRaw } from 'vue'
+import { getDatabase, ref as fbRef, set, onValue, remove } from "firebase/database"
+
+import Header from './components/Header.vue'
+import SearchBar from './components/SearchBar.vue'
+import Map from './components/Map.vue'
+import SearchedList from './components/SearchedList.vue'
+import LocalTime from './components/LocalTime.vue'
+
+const searchedPlaces = ref([])
+
+const database = getDatabase(firebase)
+const dbRef = fbRef(database)
+
+// When a new search is emitted from SearchBar, update database
+function addSearch(obj) {
+  const copiedArr = [ ...searchedPlaces.value ]
+  copiedArr.push({ ...obj })
+  set(dbRef, copiedArr)
+}
+
+// When user deletes locations, update database
+function delSearch(delArray){
+  // creates a newArray based on searchedPlaces, but filter out deleted places
+  const newHistory = searchedPlaces.value.filter((place, index) => {
+      return !delArray.value.includes(String(index + 1));
+  })
+
+  set(dbRef, newHistory)
+}
+
+onMounted(() => {
+  searchedPlaces.value = []
+  onValue(dbRef, (data) => {
+    if(data.exists()) {
+      searchedPlaces.value = data.val()
+    } else {
+      console.log('no data')
+      searchedPlaces.value = []
+    }
+  })
+})
+
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
+    <Header appName="Maps Marker" />
   </header>
 
-  <main>
-    <TheWelcome />
+  <main class="container-fluid mb-4">
+    <SearchBar @latest-search="addSearch" />
+
+    <div class="container-fluid d-md-flex">
+      <div class="w-100">
+        <Map :searched-places="searchedPlaces" />
+        <LocalTime v-show="searchedPlaces.length > 0" :searched-places="searchedPlaces "/>
+      </div>
+      <SearchedList :searched-places="searchedPlaces" @delete-places="delSearch"/>
+    </div>
+
   </main>
 </template>
 
-<style scoped>
+<style>
 header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+  background-color: #89d6dd;
 }
 </style>
