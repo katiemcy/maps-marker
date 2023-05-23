@@ -1,7 +1,7 @@
 <script setup>
 import firebase from './firebase'
-import { ref, onMounted, toRaw } from 'vue'
-import { getDatabase, ref as fbRef, set, onValue, remove } from "firebase/database"
+import { ref, onMounted } from 'vue'
+import { getDatabase, ref as fbRef, set, onValue } from "firebase/database"
 
 import Header from './components/Header.vue'
 import SearchBar from './components/SearchBar.vue'

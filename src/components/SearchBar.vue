@@ -1,8 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, toRaw } from 'vue'
-import axios from 'axios'
-
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
+import { onMounted, reactive, ref } from 'vue'
 
 const addressInput = ref('')
 const latestSearch = reactive({
@@ -109,7 +106,6 @@ function validateAddress(addr){
             console.log('invalid address')
             invalidAddr.value = true
         }
-        // .catch((e) => window.alert("Geocoder failed due to: " + e))
     })
 }
 
