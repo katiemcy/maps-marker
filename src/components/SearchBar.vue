@@ -10,7 +10,7 @@ const latestSearch = reactive({
 })
 
 const deniedAccess = ref(false)
-const invalidAddr = ref(false)
+const errorMsg = ref('')
 
 const loadingGeo = ref(false)
 
@@ -54,11 +54,10 @@ function getGeolocation() {
             error => {
                 loadingGeo.value = false
                 deniedAccess.value = true
-                console.log(error.message)
             }
         )
     } else {
-        console.log ("Your browser does not support geolocation API")
+        errorMsg.value = "Your browser does not support geolocation API"
         loadingGeo.value = false
     }
 }
@@ -76,14 +75,12 @@ function getAddress(lat, lng) {
     .then((response) => {
       if (response.results[0]) {
         addressInput.value = response.results[0].formatted_address
-      } else {
-        window.alert("No results found");
-      }
+      } 
       loadingGeo.value = false
-      invalidAddr.value = false
+      errorMsg.value = ''
     })
     .catch((e) => {
-        console.log("Geocoder failed due to: " + e)
+        errorMsg.value = "Geocoder failed due to: " + e
         loadingGeo.value = false
     })
 }
@@ -93,19 +90,23 @@ function validateAddress(addr){
     const geocoder = new google.maps.Geocoder();
 
     geocoder
-    .geocode({ address: addr }, (result, status) => {
-        if(status === google.maps.GeocoderStatus.OK) {
-            latestSearch.place_id = result[0].place_id
-            latestSearch.formatted_address = result[0].formatted_address
-            latestSearch.lat = result[0].geometry.location.lat()
-            latestSearch.lng = result[0].geometry.location.lng()
+    .geocode({ address: addr })
+    .then((response) => {
+        if(response.results[0]) {
+            errorMsg.value = ''
+
+            const firstResult = response.results[0]
+            latestSearch.place_id = firstResult.place_id
+            latestSearch.formatted_address = firstResult.formatted_address
+            latestSearch.lat = firstResult.geometry.location.lat()
+            latestSearch.lng = firstResult.geometry.location.lng()
             
-            invalidAddr.value = false
             emit('latest-search', latestSearch)
-        } else {
-            console.log('invalid address')
-            invalidAddr.value = true
-        }
+        } 
+    })
+    .catch((e) => {
+        errorMsg.value = "Geocoder failed due to: " + e
+        loadingGeo.value = false
     })
 }
 
@@ -123,10 +124,10 @@ onMounted(() => {
     <section class="py-3">
         <div class="container-fluid">
             <p v-if="deniedAccess">Locator is unable to find your address, please enter location manually</p>
-            <p v-if="invalidAddr">Invalid address</p>
-            <form action="d-flex w-75 align-items-center">
+            <p v-if="errorMsg">{{ errorMsg }}</p>
+            <form action="d-flex align-items-center">
                 <label for="location" class="visually-hidden">City, neighbourhood or address</label>
-                <input class="h-100 w-75 ms-2" type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
+                <input class="h-100 w-50 ms-2" type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
         
                 <button class="" type="button" @click="getGeolocation">
                     <font-awesome-icon v-if="!loadingGeo" icon="fa-solid fa-location-crosshairs" />
