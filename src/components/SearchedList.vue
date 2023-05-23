@@ -110,6 +110,7 @@ function handleDelete(e) {
 <style scoped>
 section {
     height: 75vh;
+    width: 50%;
 }
 input[type=checkbox] {
     min-width: 15px;
@@ -128,6 +129,7 @@ input[type=checkbox] {
 @media(max-width: 767px) {
     section {
         max-height: 300px;
+        width: 100%;
     }
 }
 </style>

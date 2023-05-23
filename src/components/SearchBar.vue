@@ -1,8 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, toRaw } from 'vue'
-import axios from 'axios'
-
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
+import { onMounted, reactive, ref } from 'vue'
 
 const addressInput = ref('')
 const latestSearch = reactive({
@@ -13,7 +10,7 @@ const latestSearch = reactive({
 })
 
 const deniedAccess = ref(false)
-const invalidAddr = ref(false)
+const errorMsg = ref('')
 
 const loadingGeo = ref(false)
 
@@ -57,69 +54,60 @@ function getGeolocation() {
             error => {
                 loadingGeo.value = false
                 deniedAccess.value = true
-                console.log(error.message)
             }
         )
     } else {
-        console.log ("Your browser does not support geolocation API")
+        errorMsg.value = "Your browser does not support geolocation API"
         loadingGeo.value = false
     }
 }
 
 function getAddress(lat, lng) {
-    axios({
-        method: 'get',
-        url: 'https://maps.googleapis.com/maps/api/geocode/json',
-        params: {
-            key: GOOGLE_MAPS_API_KEY,
-            latlng: `${lat},${lng}`
-        }
-    })
-    .then(res => {
-        if(res.data.error_message) {
-            console.log(res.data.error_message)
-        } else {
-            addressInput.value = res.data.results[0].formatted_address
-        }
+    const geocoder = new google.maps.Geocoder();
 
-        loadingGeo.value = false
+    const latlng = {
+        lat: lat,
+        lng: lng
+    }
+
+    geocoder
+    .geocode({ location: latlng })
+    .then((response) => {
+      if (response.results[0]) {
+        addressInput.value = response.results[0].formatted_address
+      } 
+      loadingGeo.value = false
+      errorMsg.value = ''
     })
-    .catch(error => {
-        console.log(error.message)
+    .catch((e) => {
+        errorMsg.value = "Geocoder failed due to: " + e
         loadingGeo.value = false
     })
 }
 // *************** END: get user's location functions
 
 function validateAddress(addr){
-    axios({
-        method: 'get',
-        url: 'https://maps.googleapis.com/maps/api/geocode/json',
-        params: {
-            key: GOOGLE_MAPS_API_KEY,
-            address: addr
-        }
-    })
-    .then(res => {
-        if(res.data.status === 'OK' ) {
-            invalidAddr.value = false
-            deniedAccess.value = false
+    const geocoder = new google.maps.Geocoder();
 
-            const result = res.data.results[0]
-            latestSearch.place_id = result.place_id
-            latestSearch.formatted_address = result.formatted_address
-            latestSearch.lat = result.geometry.location.lat
-            latestSearch.lng = result.geometry.location.lng
+    geocoder
+    .geocode({ address: addr })
+    .then((response) => {
+        if(response.results[0]) {
+            errorMsg.value = ''
+            addressInput.value = ''
 
+            const firstResult = response.results[0]
+            latestSearch.place_id = firstResult.place_id
+            latestSearch.formatted_address = firstResult.formatted_address
+            latestSearch.lat = firstResult.geometry.location.lat()
+            latestSearch.lng = firstResult.geometry.location.lng()
+            
             emit('latest-search', latestSearch)
-        } else {
-            console.log('invalid address')
-            invalidAddr.value = true
-        }
+        } 
     })
-    .catch(error => {
-        invalidAddr.value = true
-        console.log(error.message)
+    .catch((e) => {
+        errorMsg.value = "Geocoder failed due to: " + e
+        loadingGeo.value = false
     })
 }
 
@@ -137,10 +125,10 @@ onMounted(() => {
     <section class="py-3">
         <div class="container-fluid">
             <p v-if="deniedAccess">Locator is unable to find your address, please enter location manually</p>
-            <p v-if="invalidAddr">Invalid address</p>
-            <form action="d-flex w-75 align-items-center">
+            <p v-if="errorMsg">{{ errorMsg }}</p>
+            <form action="d-flex align-items-center">
                 <label for="location" class="visually-hidden">City, neighbourhood or address</label>
-                <input class="h-100 w-75 ms-2" type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
+                <input class="h-100 w-50 ms-2" type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
         
                 <button class="" type="button" @click="getGeolocation">
                     <font-awesome-icon v-if="!loadingGeo" icon="fa-solid fa-location-crosshairs" />

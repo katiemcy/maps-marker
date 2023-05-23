@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, watch, reactive, toRef } from 'vue'
 import { Loader } from "@googlemaps/js-api-loader"
-// import { onValue } from 
 
 const props = defineProps({
     searchedPlaces: Array
