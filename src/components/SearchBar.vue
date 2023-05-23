@@ -87,11 +87,13 @@ function getAddress(lat, lng) {
 // *************** END: get user's location functions
 
 function validateAddress(addr){
+    console.log(addr)
     const geocoder = new google.maps.Geocoder();
 
     geocoder
     .geocode({ address: addr })
     .then((response) => {
+        console.log(response)
         if(response.results[0]) {
             errorMsg.value = ''
             addressInput.value = ''
@@ -112,6 +114,7 @@ function validateAddress(addr){
 }
 
 function handleSubmit () {
+    console.log('submit')
     validateAddress(addressInput.value)
 }
 
@@ -126,7 +129,7 @@ onMounted(() => {
         <div class="container-fluid">
             <p v-if="deniedAccess">Locator is unable to find your address, please enter location manually</p>
             <p v-if="errorMsg">{{ errorMsg }}</p>
-            <form action="d-flex align-items-center">
+            <form method="post">
                 <label for="location" class="visually-hidden">City, neighbourhood or address</label>
                 <input class="h-100 w-50 ms-2" type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
         
