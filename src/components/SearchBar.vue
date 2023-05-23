@@ -67,59 +67,49 @@ function getGeolocation() {
 }
 
 function getAddress(lat, lng) {
-    axios({
-        method: 'get',
-        url: 'https://maps.googleapis.com/maps/api/geocode/json',
-        params: {
-            key: GOOGLE_MAPS_API_KEY,
-            latlng: `${lat},${lng}`
-        }
-    })
-    .then(res => {
-        if(res.data.error_message) {
-            console.log(res.data.error_message)
-        } else {
-            addressInput.value = res.data.results[0].formatted_address
-        }
+    const geocoder = new google.maps.Geocoder();
 
-        loadingGeo.value = false
+    const latlng = {
+        lat: lat,
+        lng: lng
+    }
+
+    geocoder
+    .geocode({ location: latlng })
+    .then((response) => {
+      if (response.results[0]) {
+        addressInput.value = response.results[0].formatted_address
+      } else {
+        window.alert("No results found");
+      }
+      loadingGeo.value = false
+      invalidAddr.value = false
     })
-    .catch(error => {
-        console.log(error.message)
+    .catch((e) => {
+        console.log("Geocoder failed due to: " + e)
         loadingGeo.value = false
     })
 }
 // *************** END: get user's location functions
 
 function validateAddress(addr){
-    axios({
-        method: 'get',
-        url: 'https://maps.googleapis.com/maps/api/geocode/json',
-        params: {
-            key: GOOGLE_MAPS_API_KEY,
-            address: addr
-        }
-    })
-    .then(res => {
-        if(res.data.status === 'OK' ) {
+    const geocoder = new google.maps.Geocoder();
+
+    geocoder
+    .geocode({ address: addr }, (result, status) => {
+        if(status === google.maps.GeocoderStatus.OK) {
+            latestSearch.place_id = result[0].place_id
+            latestSearch.formatted_address = result[0].formatted_address
+            latestSearch.lat = result[0].geometry.location.lat()
+            latestSearch.lng = result[0].geometry.location.lng()
+            
             invalidAddr.value = false
-            deniedAccess.value = false
-
-            const result = res.data.results[0]
-            latestSearch.place_id = result.place_id
-            latestSearch.formatted_address = result.formatted_address
-            latestSearch.lat = result.geometry.location.lat
-            latestSearch.lng = result.geometry.location.lng
-
             emit('latest-search', latestSearch)
         } else {
             console.log('invalid address')
             invalidAddr.value = true
         }
-    })
-    .catch(error => {
-        invalidAddr.value = true
-        console.log(error.message)
+        // .catch((e) => window.alert("Geocoder failed due to: " + e))
     })
 }
 
