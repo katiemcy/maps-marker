@@ -8,8 +8,8 @@ defineProps({
 </script>
 
 <template>
-  <div class="wrapper">
-    <h1>{{ appName }}</h1>
+  <div class="py-3 px-4 container-fluid">
+    <h1 class="text-white fw-bolder">{{ appName }}</h1>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, toRef, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
     searchedPlaces: Array
@@ -10,7 +10,7 @@ const searchedPlaces = computed(() =>
     props.searchedPlaces.map((place, index) => ({ ...place, mapIndex: index + 1}))
 )
 
-// Display 10 places logic
+// *************** Display 10 places logic
 // currentIndex describes the index of the latest place on the display list
 const currentIndex = ref(searchedPlaces.value.length)
 
@@ -34,10 +34,10 @@ function showPrevTen() {
 function showNextTen() {
   currentIndex.value = Math.max(0, currentIndex.value - 10);
 }
-// END: display 10 places logic
+// *************** END: display 10 places logic
 
 
-// Delete places 
+// *************** Delete places 
 const deletePlaces = ref([])
 const emit = defineEmits(['delete-places'])
 
@@ -51,50 +51,83 @@ function handleDelete(e) {
 
     emit('delete-places', deletePlaces)                               
 }
-// END: delete places
-
-onMounted(() => {
-    console.log(searchedPlaces.value)
-    console.log(displayedPlaces.value)
-})
+// *************** END: delete places
 
 </script>
 
 <template>
-    <section>
-        <div class="wrapper">
-            <form action="">
-                <button type="submit" @click.prevent="handleDelete">Delete selected location</button>
-                <ul>
-                    <!-- a select box, the map number, the address -->
-                    <li v-if="props.searchedPlaces.length > 0" 
-                        v-for="(place, index) in displayedPlaces" 
-                        :key="place.place_id"
-                    >
-                        <label :for="place.place_id + index" class="sr-only">Select {{place.formatted_address}}</label>
-                        <input type="checkbox" name="select" :id="place.place_id + index" :value="place.mapIndex">
-                        <p>{{ place.mapIndex }}.</p>
-                        <p>{{ place.formatted_address }}</p>
-                    </li>
-                </ul>
-            </form>
-
-            <div>
-                <button @click="showPrevTen" 
-                        :disabled="currentIndex === searchedPlaces.length">&lt;</button>
-                <button @click="showNextTen" :disabled="currentIndex - 10 <= 0">&gt;</button>
+    <section class="overflow-y-auto">
+        <form class="position-relative" action="post">
+            <div class="position-sticky fixed-top d-flex justify-content-between align-items-center p-2 bg-white">
+                <div>
+                    <button class="btn btn-outline-secondary btn-sm"
+                            type="button"
+                            @click="showPrevTen" 
+                            :disabled="currentIndex === searchedPlaces.length">
+                        &lt
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm"
+                            type="button"
+                            @click="showNextTen" 
+                            :disabled="currentIndex - 10 <= 0">
+                        &gt;
+                    </button>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm"
+                        type="submit" 
+                        @click.prevent="handleDelete">
+                    Delete selected location
+                </button>
             </div>
-        </div>
+
+            <ul class="list-unstyled list-group d-flex flex-column-reverse">
+                <!-- a select box, the map number, the address -->
+                <li class="list-group-item list-group-item-light d-flex align-items-center justify-content-between"
+                    v-if="props.searchedPlaces.length > 0" 
+                    v-for="(place, index) in displayedPlaces" 
+                    :key="place.place_id"
+                >   
+                    <div class="d-flex me-2 align-items-center form-check">
+                        <input class="me-2 form-check-input"
+                                type="checkbox" 
+                                name="select" 
+                                :id="place.place_id + index" 
+                                :value="place.mapIndex" >
+                        <label class="form-check-label"
+                                :for="place.place_id + index">
+                            {{place.formatted_address}}
+                        </label>
+                        
+                    </div>
+
+                    <div class="mapTag">{{ place.mapIndex }}</div>
+                </li>
+            </ul>
+        </form>
     </section>
 </template>
 
 <style scoped>
-    ul {
-        display: flex;
-        flex-direction: column-reverse;
+section {
+    height: 75vh;
+}
+input[type=checkbox] {
+    min-width: 15px;
+}
+.mapTag {
+    min-width: 35px;
+    min-height: 35px;
+    background-color: #f78f1e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: white;
+    border-radius: 15%
+}
+@media(max-width: 767px) {
+    section {
+        max-height: 300px;
     }
-    li {
-        display: flex;
-        list-style-type: none;
-    }
+}
 </style>

@@ -58,7 +58,7 @@ function calcTime() {
 }
 
 watch(searchedPlaces, () => {
-// when user searches a new place, assign coords with the latest search and get local time again
+// when user searches a new place, assign coords with the latest search and get local timezone info
     if (props.searchedPlaces.length > 0) {
         latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
         latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
@@ -83,8 +83,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="wrapper">
-        <p>Local time of latest search: {{ localDate }}, {{ localTime }}({{ timeZone }})</p>
+    <div>
+        <p class="fw-bold">Local time of latest search: {{ localDate }}, {{ localTime }}({{ timeZone }})</p>
     </div>
 </template>
 

@@ -50,21 +50,22 @@ onMounted(() => {
     <Header appName="Maps Marker" />
   </header>
 
-  <main>
+  <main class="container-fluid mb-4">
     <SearchBar @latest-search="addSearch" />
-    <Map :searched-places="searchedPlaces" />
-    <LocalTime v-show="searchedPlaces.length > 0" :searched-places="searchedPlaces "/>
-    <SearchedList :searched-places="searchedPlaces" @delete-places="delSearch"/>
+
+    <div class="container-fluid d-md-flex">
+      <div class="w-100">
+        <Map :searched-places="searchedPlaces" />
+        <LocalTime v-show="searchedPlaces.length > 0" :searched-places="searchedPlaces "/>
+      </div>
+      <SearchedList :searched-places="searchedPlaces" @delete-places="delSearch"/>
+    </div>
+
   </main>
 </template>
 
 <style>
 header {
-  width: 100%;
-}
-.wrapper {
-  width: 85%;
-  max-width: 1350px;
-  margin: 0 auto;
+  background-color: #89d6dd;
 }
 </style>

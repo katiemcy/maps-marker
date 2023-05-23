@@ -4,7 +4,6 @@ import axios from 'axios'
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
 
-const deniedAccess = ref(false)
 const addressInput = ref('')
 const latestSearch = reactive({
     place_id: '',
@@ -13,9 +12,14 @@ const latestSearch = reactive({
     lng: null
 })
 
+const deniedAccess = ref(false)
+const invalidAddr = ref(false)
+
+const loadingGeo = ref(false)
+
 const emit = defineEmits(['latest-search'])
 
-// Autocomplete functions
+// *************** Autocomplete functions
 let autocompleteObj;
 // initialize autocomplete functions
 function autocomplete() {
@@ -37,11 +41,12 @@ function handleChange() {
     const place = autocompleteObj.getPlace()
     addressInput.value = place.formatted_address
 }
-// END: Autocomplete functions
+// *************** END: Autocomplete functions
 
 
-// Get user's location functions
+// *************** Get user's location functions
 function getGeolocation() {
+    loadingGeo.value = true
     const isSupported = 'navigator' in window && 'geolocation' in navigator
 
     if (isSupported){
@@ -50,12 +55,14 @@ function getGeolocation() {
                 getAddress(position.coords.latitude, position.coords.longitude)
             },
             error => {
+                loadingGeo.value = false
                 deniedAccess.value = true
                 console.log(error.message)
             }
         )
     } else {
         console.log ("Your browser does not support geolocation API")
+        loadingGeo.value = false
     }
 }
 
@@ -74,12 +81,15 @@ function getAddress(lat, lng) {
         } else {
             addressInput.value = res.data.results[0].formatted_address
         }
+
+        loadingGeo.value = false
     })
     .catch(error => {
         console.log(error.message)
+        loadingGeo.value = false
     })
 }
-// END: get user's location functions
+// *************** END: get user's location functions
 
 function validateAddress(addr){
     axios({
@@ -92,6 +102,9 @@ function validateAddress(addr){
     })
     .then(res => {
         if(res.data.status === 'OK' ) {
+            invalidAddr.value = false
+            deniedAccess.value = false
+
             const result = res.data.results[0]
             latestSearch.place_id = result.place_id
             latestSearch.formatted_address = result.formatted_address
@@ -101,9 +114,11 @@ function validateAddress(addr){
             emit('latest-search', latestSearch)
         } else {
             console.log('invalid address')
+            invalidAddr.value = true
         }
     })
     .catch(error => {
+        invalidAddr.value = true
         console.log(error.message)
     })
 }
@@ -119,18 +134,22 @@ onMounted(() => {
 </script>
 
 <template>
-    <section>
-        <div class="wrapper">
+    <section class="py-3">
+        <div class="container-fluid">
             <p v-if="deniedAccess">Locator is unable to find your address, please enter location manually</p>
-            <form action="">
-                <label for="location" class="sr-only">City, neighbourhood or address</label>
-                <input type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
+            <p v-if="invalidAddr">Invalid address</p>
+            <form action="d-flex w-75 align-items-center">
+                <label for="location" class="visually-hidden">City, neighbourhood or address</label>
+                <input class="h-100 w-75 ms-2" type="text" name="location" id="location" v-model="addressInput" placeholder="City, neighbourhood or address">
         
-                <button type="button" @click="getGeolocation">
-                    <font-awesome-icon icon="fa-solid fa-location-crosshairs" />
+                <button class="" type="button" @click="getGeolocation">
+                    <font-awesome-icon v-if="!loadingGeo" icon="fa-solid fa-location-crosshairs" />
+                    <div v-if="loadingGeo" class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </button>
-                <button type="submit" @click.prevent="handleSubmit">
-                    <font-awesome-icon icon="fa-solid fa-magnifying-glass" />
+                <button class="" type="submit" @click.prevent="handleSubmit">
+                    <font-awesome-icon v-if="!loadingAddr" icon="fa-solid fa-magnifying-glass" />
                 </button>
             </form>
         </div>
@@ -138,12 +157,19 @@ onMounted(() => {
 </template>
 
 <style scoped>
-button {
-    width: 20px;
-    height: 20px;
+p {
+    color: rgb(224, 69, 69);
+    margin-bottom: 5px;
+    padding-left: 10px;
 }
-
+button {
+    width: 40px;
+    height: 100%;
+    background-color: white;
+    border: 1px solid #89d6dd;
+    color: #89d6dd
+}
 input {
-    width: 100%;
+    padding: 0 10px;
 }
 </style>

@@ -69,29 +69,31 @@ watch(searchedPlaces, () => {
 </script>
 
 <template>
-    <section>
-        <div class="wrapper">
-            <div ref="mapDiv" class="map"></div>
-        </div>
+    <section class="w-100">
+        <div ref="mapDiv" class="map w-100"></div>
     </section>
 </template>
 
 <style>
-    .map {
-        width: 100%; 
-        height: 80vh;
-    }
+.map {
+    height: 75vh;
+}
+.tag {
+    width: 40px;
+    height: 40px;
+    background-color: #f78f1e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    shape-outside: circle();
+    clip-path: circle();
+    font-size: 20px;
+    color: white;
+}
 
-    .tag {
-        width: 40px;
-        height: 40px;
-        background-color: #f78f1e;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        shape-outside: circle();
-        clip-path: circle();
-        font-size: 20px;
-        color: white;
+@media(max-width: 768px) {
+    .map {
+        height: 45vh;
     }
+}
 </style>
