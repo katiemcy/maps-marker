@@ -94,6 +94,7 @@ function validateAddress(addr){
     .then((response) => {
         if(response.results[0]) {
             errorMsg.value = ''
+            addressInput.value = ''
 
             const firstResult = response.results[0]
             latestSearch.place_id = firstResult.place_id
