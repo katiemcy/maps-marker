@@ -59,7 +59,7 @@ function calcTime() {
 
 watch(searchedPlaces, () => {
 // when user searches a new place, assign coords with the latest search and get local timezone info
-    if (props.searchedPlaces.length > 0) {
+    if (searchedPlaces.length > 0) {
         latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
         latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
     
