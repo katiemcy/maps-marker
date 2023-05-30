@@ -36,7 +36,12 @@ function autocomplete() {
 // when user selects an autocompleted address, assign it to the reactive addressInput 
 function handleChange() {
     const place = autocompleteObj.getPlace()
-    addressInput.value = place.formatted_address
+
+    if (place.formatted_address){
+        addressInput.value = place.formatted_address
+    } else {
+        addressInput.value = place.name
+    }
 }
 // *************** END: Autocomplete functions
 
@@ -87,13 +92,11 @@ function getAddress(lat, lng) {
 // *************** END: get user's location functions
 
 function validateAddress(addr){
-    console.log(addr)
     const geocoder = new google.maps.Geocoder();
 
     geocoder
     .geocode({ address: addr })
     .then((response) => {
-        console.log(response)
         if(response.results[0]) {
             errorMsg.value = ''
             addressInput.value = ''
@@ -114,7 +117,6 @@ function validateAddress(addr){
 }
 
 function handleSubmit () {
-    console.log('submit')
     validateAddress(addressInput.value)
 }
 

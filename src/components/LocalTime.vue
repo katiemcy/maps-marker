@@ -21,7 +21,7 @@ const dstOffset = ref(null)
 
 let intervalId = null
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
+const GOOGLE_MAPS_API_KEY = 'AIzaSyA8MWK9wVIUrGRdhibzPyeLiyVMfFfqCMA'
 
 function getTime(lat, lng) {
     axios({
@@ -59,7 +59,7 @@ function calcTime() {
 
 watch(searchedPlaces, () => {
 // when user searches a new place, assign coords with the latest search and get local timezone info
-    if (searchedPlaces.length > 0) {
+    if (searchedPlaces.value.length > 0) {
         latestSearchedCoords.lat = searchedPlaces.value[searchedPlaces.value.length - 1].lat
         latestSearchedCoords.lng = searchedPlaces.value[searchedPlaces.value.length - 1].lng
     
@@ -67,7 +67,7 @@ watch(searchedPlaces, () => {
     } else {
         clearInterval(intervalId)
     }
-})
+}, { immediate: true })
 
 watch([rawOffset, dstOffset], () => {
 // after getting timezone info from axios, run clock

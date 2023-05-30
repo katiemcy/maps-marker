@@ -13,7 +13,7 @@ const latestSearchedCoords = reactive({
 })
 const searchedPlaces = toRef(props, 'searchedPlaces')
 
-const GOOGLE_MAPS_API_KEY = 'AIzaSyDoPIW9YStF6_qxlmrmkdgQh0V28Y4yC94'
+const GOOGLE_MAPS_API_KEY = 'AIzaSyA8MWK9wVIUrGRdhibzPyeLiyVMfFfqCMA'
 
 const loader = new Loader({ apiKey: GOOGLE_MAPS_API_KEY})
 

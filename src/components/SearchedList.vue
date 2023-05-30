@@ -49,7 +49,8 @@ function handleDelete(e) {
         .filter((checkbox) => checkbox.checked)
         .map((checkbox) => checkbox.value)
 
-    emit('delete-places', deletePlaces)                               
+    emit('delete-places', deletePlaces)
+    deletePlaces.value = []                               
 }
 // *************** END: delete places
 
@@ -85,7 +86,7 @@ function handleDelete(e) {
                 <li class="list-group-item list-group-item-light d-flex align-items-center justify-content-between"
                     v-if="props.searchedPlaces.length > 0" 
                     v-for="(place, index) in displayedPlaces" 
-                    :key="place.place_id"
+                    :key="place.place_id + index"
                 >   
                     <div class="d-flex me-2 align-items-center form-check">
                         <input class="me-2 form-check-input"
