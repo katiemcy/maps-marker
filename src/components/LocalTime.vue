@@ -33,12 +33,14 @@ function getTime(lat, lng) {
             location: `${lat},${lng}`
         }
     }).then(res => {
+        console.log(res.data)
         if(res.data.status === "OK") {
             rawOffset.value = res.data.rawOffset
             dstOffset.value = res.data.dstOffset
             timeZone.value = res.data.timeZoneName
         } else {
-            console.log("error")
+            console.log(lat, lng)
+            console.log(res.data.errorMessage)
         }
     })
     .catch(error => {
@@ -75,7 +77,7 @@ watch([rawOffset, dstOffset], () => {
     clearInterval(intervalId)
     intervalId = setInterval(calcTime, 1000)
   }
-})
+}, { immediate: true })
 
 onUnmounted(() => {
     clearInterval(intervalId)
